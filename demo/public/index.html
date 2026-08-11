@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>armlens · private LLM on Arm64</title>
+<style>
+  :root { --arm:#00A3E0; --ink:#0b2233; --bg:#f3f6f9; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  header { background:linear-gradient(90deg,#001b2e,#003a5c); color:#fff; padding:14px 20px; display:flex; align-items:center; gap:12px; }
+  header .dot { width:10px; height:10px; border-radius:50%; background:#16b981; box-shadow:0 0 10px #16b981; }
+  header h1 { font-size:17px; margin:0; font-weight:700; }
+  header .tag { margin-left:auto; font-size:12px; opacity:.85; }
+  #meta { background:#e6f7ff; color:#065; font-size:12.5px; padding:6px 20px; border-bottom:1px solid #cfe9f7; }
+  #chat { max-width:820px; margin:0 auto; padding:18px 16px 120px; }
+  .msg { display:flex; margin:12px 0; }
+  .msg .bubble { padding:11px 14px; border-radius:14px; max-width:78%; line-height:1.5; white-space:pre-wrap; word-wrap:break-word; }
+  .user { justify-content:flex-end; }
+  .user .bubble { background:var(--arm); color:#fff; border-bottom-right-radius:4px; }
+  .bot .bubble { background:#fff; border:1px solid #e2e8f0; border-bottom-left-radius:4px; }
+  .stat { font-size:11px; color:#8aa0b2; margin-top:4px; }
+  form { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #e2e8f0; padding:12px; }
+  form .row { max-width:820px; margin:0 auto; display:flex; gap:8px; }
+  textarea { flex:1; resize:none; border:1px solid #cbd5e1; border-radius:10px; padding:11px 12px; font:inherit; height:46px; }
+  button { background:var(--arm); color:#fff; border:0; border-radius:10px; padding:0 20px; font-weight:600; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:default; }
+</style>
+</head>
+<body>
+<header>
+  <span class="dot"></span>
+  <h1>armlens · Private LLM running on Arm64 CPU</h1>
+  <span class="tag">100% local · no data leaves the server</span>
+</header>
+<div id="meta">Connecting to llama-server…</div>
+<div id="chat">
+  <div class="msg bot"><div class="bubble">Hi! I'm a small language model running entirely on an Arm64 CPU with llama.cpp + KleidiAI kernels — no GPU, no cloud API. Ask me anything.</div></div>
+</div>
+<form id="f">
+  <div class="row">
+    <textarea id="inp" placeholder="Type a message… (Enter to send)"></textarea>
+    <button id="send" type="submit">Send</button>
+  </div>
+</form>
+<script>
+const chat = document.getElementById('chat');
+const inp = document.getElementById('inp');
+const meta = document.getElementById('meta');
+const form = document.getElementById('f');
+const sendBtn = document.getElementById('send');
+const history = [{role:'system', content:'You are a concise, helpful assistant running locally on an Arm64 CPU.'}];
+
+// Probe the server /props for model + thread info.
+fetch('/props').then(r=>r.json()).then(p=>{
+  const m = (p.default_generation_settings && p.default_generation_settings.model) || p.model || 'local model';
+  meta.textContent = 'Model: ' + (m.split('/').pop()) + '  ·  backend: CPU (llama.cpp / KleidiAI)';
+}).catch(()=>{ meta.textContent = 'llama-server reachable · CPU inference'; });
+
+function addMsg(role, text){
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + (role==='user'?'user':'bot');
+  const b = document.createElement('div'); b.className='bubble'; b.textContent = text;
+  wrap.appendChild(b); chat.appendChild(wrap);
+  chat.scrollTop = chat.scrollHeight;
+  return b;
+}
+
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const text = inp.value.trim(); if(!text) return;
+  inp.value=''; sendBtn.disabled=true;
+  addMsg('user', text);
+  history.push({role:'user', content:text});
+  const bubble = addMsg('bot', '');
+  const stat = document.createElement('div'); stat.className='stat'; bubble.parentElement.appendChild(stat);
+
+  const t0 = performance.now(); let firstTok=null, ntok=0, acc='';
+  try {
+    const resp = await fetch('/v1/chat/completions', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'local', messages:history, stream:true, temperature:0.7, max_tokens:512 })
+    });
+    const reader = resp.body.getReader(); const dec = new TextDecoder(); let buf='';
+    while(true){
+      const {value, done} = await reader.read(); if(done) break;
+      buf += dec.decode(value, {stream:true});
+      const lines = buf.split('\n'); buf = lines.pop();
+      for(const line of lines){
+        const s = line.trim(); if(!s.startsWith('data:')) continue;
+        const data = s.slice(5).trim(); if(data==='[DONE]') continue;
+        try {
+          const j = JSON.parse(data);
+          const d = j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content;
+          if(d){ if(firstTok===null) firstTok=performance.now(); ntok++; acc+=d; bubble.textContent=acc; chat.scrollTop=chat.scrollHeight; }
+        } catch(_){}
+      }
+    }
+    const total=(performance.now()-t0)/1000;
+    const ttft = firstTok? ((firstTok-t0)/1000).toFixed(2)+'s' : '—';
+    const tps = ntok && firstTok ? (ntok/((performance.now()-firstTok)/1000)).toFixed(1) : '—';
+    stat.textContent = `TTFT ${ttft} · ${tps} tok/s · ${ntok} tokens · all on Arm CPU`;
+    history.push({role:'assistant', content:acc});
+  } catch(err){
+    bubble.textContent = '⚠ Could not reach llama-server. Is ./demo/serve_demo.sh running?';
+  } finally { sendBtn.disabled=false; inp.focus(); }
+});
+inp.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); }});
+</script>
+</body>
+</html>

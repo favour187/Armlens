@@ -1,0 +1,173 @@
+{
+  "meta": {
+    "version": "0.1.0",
+    "timestamp": "2026-08-11 13:40 UTC",
+    "preset": "quant-sweep (EXAMPLE DATA)"
+  },
+  "sysinfo": {
+    "arch": "aarch64",
+    "is_arm64": true,
+    "cpu_model": "Arm Neoverse-V1",
+    "physical_cores": 4,
+    "logical_cpus": 4,
+    "total_ram_gb": 8.0,
+    "os": "Linux 6.5",
+    "kernel": "6.5",
+    "arm_features": [
+      "asimd",
+      "asimddp",
+      "i8mm",
+      "bf16",
+      "sve"
+    ],
+    "kleidi_relevant_features": [
+      "asimddp",
+      "i8mm",
+      "bf16",
+      "sve"
+    ],
+    "likely_cloud": "AWS Graviton"
+  },
+  "summary": {
+    "models": {
+      "TinyLlama-1.1B Q4_0": {
+        "quant": "Q4_0",
+        "size_mb": 636.0,
+        "best_decode_tps": 58.9,
+        "best_decode_threads": 4,
+        "best_prefill_tps": 171.4,
+        "best_prefill_threads": 4
+      },
+      "TinyLlama-1.1B Q8_0": {
+        "quant": "Q8_0",
+        "size_mb": 1170.0,
+        "best_decode_tps": 39.5,
+        "best_decode_threads": 4,
+        "best_prefill_tps": 142.0,
+        "best_prefill_threads": 4
+      },
+      "TinyLlama-1.1B F16": {
+        "quant": "F16",
+        "size_mb": 2200.0,
+        "best_decode_tps": 19.6,
+        "best_decode_threads": 4,
+        "best_prefill_tps": 88.0,
+        "best_prefill_threads": 4
+      }
+    },
+    "headline": {
+      "fastest_model": "TinyLlama-1.1B Q4_0",
+      "slowest_model": "TinyLlama-1.1B F16",
+      "decode_speedup_x": 3.01,
+      "size_reduction_x": 3.46,
+      "fastest_tps": 58.9,
+      "slowest_tps": 19.6
+    }
+  },
+  "rows": [
+    {
+      "model_label": "TinyLlama-1.1B Q4_0",
+      "model_path": "models/tl-q4_0.gguf",
+      "model_size_mb": 636.0,
+      "quant": "Q4_0",
+      "n_threads": 1,
+      "test": "pp",
+      "n_tokens": 128,
+      "tokens_per_sec": 48.2,
+      "stddev": 0.6,
+      "backend": "CPU",
+      "error": ""
+    },
+    {
+      "model_label": "TinyLlama-1.1B Q4_0",
+      "model_path": "models/tl-q4_0.gguf",
+      "model_size_mb": 636.0,
+      "quant": "Q4_0",
+      "n_threads": 4,
+      "test": "pp",
+      "n_tokens": 128,
+      "tokens_per_sec": 171.4,
+      "stddev": 2.1,
+      "backend": "CPU",
+      "error": ""
+    },
+    {
+      "model_label": "TinyLlama-1.1B Q4_0",
+      "model_path": "models/tl-q4_0.gguf",
+      "model_size_mb": 636.0,
+      "quant": "Q4_0",
+      "n_threads": 1,
+      "test": "tg",
+      "n_tokens": 128,
+      "tokens_per_sec": 22.7,
+      "stddev": 0.3,
+      "backend": "CPU",
+      "error": ""
+    },
+    {
+      "model_label": "TinyLlama-1.1B Q4_0",
+      "model_path": "models/tl-q4_0.gguf",
+      "model_size_mb": 636.0,
+      "quant": "Q4_0",
+      "n_threads": 4,
+      "test": "tg",
+      "n_tokens": 128,
+      "tokens_per_sec": 58.9,
+      "stddev": 0.8,
+      "backend": "CPU",
+      "error": ""
+    },
+    {
+      "model_label": "TinyLlama-1.1B Q8_0",
+      "model_path": "models/tl-q8_0.gguf",
+      "model_size_mb": 1170.0,
+      "quant": "Q8_0",
+      "n_threads": 4,
+      "test": "pp",
+      "n_tokens": 128,
+      "tokens_per_sec": 142.0,
+      "stddev": 1.9,
+      "backend": "CPU",
+      "error": ""
+    },
+    {
+      "model_label": "TinyLlama-1.1B Q8_0",
+      "model_path": "models/tl-q8_0.gguf",
+      "model_size_mb": 1170.0,
+      "quant": "Q8_0",
+      "n_threads": 4,
+      "test": "tg",
+      "n_tokens": 128,
+      "tokens_per_sec": 39.5,
+      "stddev": 0.5,
+      "backend": "CPU",
+      "error": ""
+    },
+    {
+      "model_label": "TinyLlama-1.1B F16",
+      "model_path": "models/tl-f16.gguf",
+      "model_size_mb": 2200.0,
+      "quant": "F16",
+      "n_threads": 4,
+      "test": "pp",
+      "n_tokens": 128,
+      "tokens_per_sec": 88.0,
+      "stddev": 1.2,
+      "backend": "CPU",
+      "error": ""
+    },
+    {
+      "model_label": "TinyLlama-1.1B F16",
+      "model_path": "models/tl-f16.gguf",
+      "model_size_mb": 2200.0,
+      "quant": "F16",
+      "n_threads": 4,
+      "test": "tg",
+      "n_tokens": 128,
+      "tokens_per_sec": 19.6,
+      "stddev": 0.4,
+      "backend": "CPU",
+      "error": ""
+    }
+  ]
+}
