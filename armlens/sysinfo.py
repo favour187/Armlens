@@ -21,7 +21,7 @@ from dataclasses import dataclass, asdict, field
 from typing import Optional
 
 
-# aarch64 HWCAP feature flags we care about, as they appear in /proc/cpuinfo "Features".
+
 ARM_FEATURE_MEANING = {
     "asimd": "Advanced SIMD (NEON)",
     "asimddp": "INT8 dot product (dotprod) - accelerates Q4_0/Q8_0",
@@ -32,7 +32,7 @@ ARM_FEATURE_MEANING = {
     "fphp": "half-precision floating point",
 }
 
-# Features that, when present, mean KleidiAI's fast INT8 kernels can kick in.
+
 KLEIDI_RELEVANT = ["asimddp", "i8mm", "sve", "sve2", "bf16"]
 
 
@@ -81,11 +81,11 @@ def _detect_cloud(cpu_model: str) -> str:
 
 def _cpu_model() -> str:
     cpuinfo = _read("/proc/cpuinfo")
-    # x86 exposes "model name"; aarch64 usually exposes "CPU part" codes only.
+
     m = re.search(r"model name\s*:\s*(.+)", cpuinfo)
     if m:
         return m.group(1).strip()
-    # Map common aarch64 CPU part IDs to Neoverse names.
+
     part = re.search(r"CPU part\s*:\s*(0x[0-9a-fA-F]+)", cpuinfo)
     part_map = {
         "0xd0c": "Arm Neoverse-N1",
@@ -111,7 +111,7 @@ def _arm_features() -> list:
 
 
 def _physical_cores() -> int:
-    # Prefer lscpu; fall back to os.cpu_count.
+
     try:
         out = subprocess.check_output(["lscpu"], text=True, stderr=subprocess.DEVNULL)
         sockets = cores = None

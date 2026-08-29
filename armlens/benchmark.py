@@ -31,7 +31,7 @@ class BenchRow:
     model_size_mb: float
     quant: str
     n_threads: int
-    test: str          # "pp" (prefill) or "tg" (decode)
+    test: str
     n_tokens: int
     tokens_per_sec: float
     stddev: float = 0.0
@@ -44,11 +44,11 @@ class BenchRow:
 
 @dataclass
 class BenchConfig:
-    llama_bench: str                 # path to the llama-bench binary
-    models: list = field(default_factory=list)   # list of (label, path)
-    threads: list = field(default_factory=list)  # e.g. [1, 2, 4]
-    n_prompt: int = 128              # prefill tokens
-    n_gen: int = 128                 # decode tokens
+    llama_bench: str
+    models: list = field(default_factory=list)
+    threads: list = field(default_factory=list)
+    n_prompt: int = 128
+    n_gen: int = 128
     repetitions: int = 3
 
 
@@ -122,11 +122,11 @@ def _run_llama_bench(cfg: BenchConfig, label: str, path: str) -> list:
                              error="llama-bench timed out"))
         return rows
 
-    # llama-bench JSON is a list of result objects.
+
     try:
         data = json.loads(out)
     except json.JSONDecodeError:
-        # Some builds print a banner before JSON; grab the JSON array.
+
         start = out.find("[")
         end = out.rfind("]")
         if start != -1 and end != -1:

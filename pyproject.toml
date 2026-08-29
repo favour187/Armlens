@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Plotting is optional so the core tool runs on a bare Arm VM with zero heavy deps.
+
 plots = ["matplotlib>=3.6.0"]
 
 [project.scripts]

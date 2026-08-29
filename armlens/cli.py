@@ -30,7 +30,7 @@ try:
     from rich.console import Console
     from rich.table import Table
     _console = Console()
-except Exception:  # rich is a hard dep, but degrade gracefully just in case
+except Exception:
     _console = None
 
 
@@ -108,12 +108,12 @@ def cmd_bench(args) -> int:
     threads = ([int(t) for t in args.threads.split(",")] if args.threads
                else _default_threads(si.physical_cores))
 
-    # Presets tweak the token counts.
+
     if args.preset == "quick":
         n_prompt, n_gen, reps = 32, 32, 2
     elif args.preset == "quant-sweep":
         n_prompt, n_gen, reps = 128, 128, 3
-    else:  # thorough
+    else:
         n_prompt, n_gen, reps = 256, 256, 5
     n_prompt = args.n_prompt or n_prompt
     n_gen = args.n_gen or n_gen

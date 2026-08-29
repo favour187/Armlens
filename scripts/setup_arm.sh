@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# armlens · one-command Arm64 setup
-# -----------------------------------
-# Builds llama.cpp with Arm KleidiAI INT8/INT4 kernels enabled, installs armlens,
-# and fetches a small demo model so you can benchmark immediately.
-#
-# Tested on: Oracle Cloud Ampere A1 (Ubuntu 22.04/24.04), AWS Graviton (c7g), any
-# aarch64 Linux with apt. Safe to re-run (idempotent-ish).
-#
-# Usage:   ./scripts/setup_arm.sh
+
+
+
+
+
+
+
+
+
 set -euo pipefail
 
 BLUE="\033[1;36m"; GREEN="\033[1;32m"; RED="\033[1;31m"; YEL="\033[1;33m"; NC="\033[0m"
@@ -19,7 +19,7 @@ die()  { echo -e "${RED}✗ $*${NC}"; exit 1; }
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-# ---- 0. Sanity: must be Arm64 -------------------------------------------------
+
 ARCH="$(uname -m)"
 if [[ "$ARCH" != "aarch64" && "$ARCH" != "arm64" ]]; then
   warn "This host is '$ARCH', not Arm64."
@@ -30,7 +30,7 @@ if [[ "$ARCH" != "aarch64" && "$ARCH" != "arm64" ]]; then
 fi
 ok "Architecture: $ARCH"
 
-# ---- 1. System dependencies ---------------------------------------------------
+
 say "Installing build dependencies (needs sudo)…"
 if command -v apt-get >/dev/null 2>&1; then
   sudo apt-get update -y
@@ -43,7 +43,7 @@ else
 fi
 ok "Dependencies installed"
 
-# ---- 2. Python venv + armlens -------------------------------------------------
+
 say "Setting up Python environment…"
 python3 -m venv .venv
 # shellcheck disable=SC1091
@@ -52,9 +52,9 @@ pip install --upgrade pip -q
 pip install -e ".[plots]" -q || pip install -e . -q
 ok "armlens installed (run 'source .venv/bin/activate' in new shells)"
 
-# ---- 3. Build llama.cpp WITH KleidiAI ----------------------------------------
-# KleidiAI provides Arm's optimized micro-kernels for INT4/INT8 matmul. Modern
-# llama.cpp auto-detects and enables them on Arm via GGML_CPU_KLEIDIAI.
+
+
+
 LLAMA_DIR="$ROOT/llama.cpp"
 if [[ ! -d "$LLAMA_DIR/.git" ]]; then
   say "Cloning llama.cpp…"
@@ -74,14 +74,14 @@ cmake --build "$LLAMA_DIR/build" --config Release -j"$(nproc)" \
       --target llama-bench llama-cli llama-server llama-quantize
 ok "Built: llama-bench, llama-cli, llama-server, llama-quantize"
 
-# Verify KleidiAI actually compiled in (best effort).
+
 if strings "$LLAMA_DIR/build/bin/llama-bench" 2>/dev/null | grep -qi kleidi; then
   ok "KleidiAI symbols present in binary"
 else
   warn "Could not confirm KleidiAI symbols (older llama.cpp?). Q4_0 will still use Arm dotprod/i8mm."
 fi
 
-# ---- 4. Fetch a small demo model ---------------------------------------------
+
 mkdir -p "$ROOT/models"
 MODEL_Q4="$ROOT/models/tinyllama-1.1b-chat-q4_0.gguf"
 if [[ ! -f "$MODEL_Q4" ]]; then

@@ -39,7 +39,7 @@ def _summarize(rows: list) -> dict:
             "best_prefill_threads": best_pp["n_threads"] if best_pp else 0,
         }
 
-    # Headline speedup: fastest decode model vs slowest decode model (e.g. Q4_0 vs F16).
+
     m = summary["models"]
     if len(m) >= 2:
         fastest = max(m.items(), key=lambda kv: kv[1]["best_decode_tps"])
@@ -59,7 +59,7 @@ def _summarize(rows: list) -> dict:
     return summary
 
 
-# --------------------------- SVG chart helpers ---------------------------
+
 
 def _svg_bar_chart(title: str, labels: list, values: list, unit: str,
                    width: int = 640, bar_h: int = 34, color: str = "#00A3E0") -> str:
@@ -92,7 +92,7 @@ def _svg_bar_chart(title: str, labels: list, values: list, unit: str,
     return "\n".join(parts)
 
 
-# --------------------------- writers ---------------------------
+
 
 def write_json(path: str, sysinfo: dict, rows: list, summary: dict, meta: dict) -> None:
     with open(path, "w", encoding="utf-8") as f:
@@ -159,14 +159,14 @@ def write_markdown(path: str, sysinfo: dict, rows: list, summary: dict, meta: di
 
 def write_html(path: str, sysinfo: dict, rows: list, summary: dict, meta: dict) -> None:
     ok = [r for r in rows if not r.get("error")]
-    # Chart 1: best decode tok/s per model.
+
     m = summary.get("models", {})
     dec_labels = list(m.keys())
     dec_vals = [round(m[k]["best_decode_tps"], 1) for k in dec_labels]
-    # Chart 2: model size per model (MB).
+
     size_labels = dec_labels
     size_vals = [m[k]["size_mb"] for k in dec_labels]
-    # Chart 3: thread scaling for the fastest model (decode).
+
     h = summary.get("headline", {})
     scale_model = h.get("fastest_model") or (dec_labels[0] if dec_labels else None)
     scale_rows = sorted([r for r in ok if r["model_label"] == scale_model and r["test"] == "tg"],

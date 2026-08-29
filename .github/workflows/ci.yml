@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  # Architecture-independent unit tests (parsing + report rendering).
+
   unit:
     runs-on: ubuntu-latest
     steps:
@@ -16,11 +16,11 @@ jobs:
           python-version: "3.11"
       - run: pip install -e . pytest
       - run: python -m pytest tests/ -q
-      - run: armlens info   # sanity: CLI runs
+      - run: armlens info
 
-  # Real Arm64 smoke: installs, detects Arm features, runs the CLI on an aarch64 runner.
+
   arm64:
-    runs-on: ubuntu-24.04-arm   # GitHub-hosted Arm runner
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

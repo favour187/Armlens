@@ -48,8 +48,8 @@ def test_report_generation_and_headline():
         assert h["fastest_model"] == "M Q4_0"
         assert h["decode_speedup_x"] == 3.0
         assert h["size_reduction_x"] > 3.0
-        # HTML must be self-contained: no external stylesheets/scripts/images.
-        # (The SVG xmlns URI is a namespace identifier, not a fetched asset.)
+
+
         with open(os.path.join(d, "report.html")) as f:
             doc = f.read()
         assert 'src="http' not in doc
@@ -59,5 +59,5 @@ def test_report_generation_and_headline():
 
 def test_find_llama_bench_missing_is_none(monkeypatch):
     monkeypatch.setattr(benchmark.shutil, "which", lambda *_: None)
-    # Nonexistent hint should not crash.
+
     assert benchmark.find_llama_bench("/nonexistent/llama-bench") is None
